@@ -6,7 +6,7 @@
 ;   [section] ; section goes between []
 ;   param=value ; assign values to parameters
 
-config_version=4
+config_version=5
 
 _global_script_classes=[ {
 "base": "Area2D",
@@ -60,8 +60,8 @@ Global="*res://src/Global.gd"
 
 [display]
 
-window/size/width=240
-window/size/height=208
+display/window/size/viewport_width=240
+display/window/size/viewport_height=208
 window/size/test_width=720
 window/size/test_height=624
 window/stretch/mode="viewport"
@@ -98,6 +98,7 @@ texture={
 
 [rendering]
 
-quality/2d/use_pixel_snap=true
+rendering/renderer/rendering_method="mobile"
+rendering/2d/snapping/use_gpu_pixel_snap=true
 environment/default_environment="res://default_env.tres"
-quality/dynamic_fonts/use_oversampling=false
+rendering/fonts/dynamic_fonts/use_oversampling=false
