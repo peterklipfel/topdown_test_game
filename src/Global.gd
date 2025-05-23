@@ -3,8 +3,7 @@ extends Node
 const SAVE_FILE = "user://savegame.save"
 const ALL_TREASURES = 9
 
-# warning-ignore:unused_signal
-signal update_treasure
+signal update_treasure()
 
 var player : Player
 var level: String = ""
@@ -21,7 +20,7 @@ func _add_item(item: String, items: Dictionary):
 		items[level].append(item)
 
 
-func add_tresure(treasure: String):
+func add_treasure(treasure: String):
 	_add_item(treasure, curr_treasures)
 
 
