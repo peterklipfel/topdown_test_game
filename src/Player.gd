@@ -1,9 +1,9 @@
 class_name Player
-extends KinematicBody2D
+extends CharacterBody2D
 
-signal player_killed
-signal won
-export (int) var speed = 100
+signal player_killed()
+signal won()
+@export var speed : int = 100
 
 var velocity := Vector2.ZERO
 var treasures := 0
@@ -14,10 +14,10 @@ func _ready():
 	Global.player = self
 
 func get_extents():
-	return $CollisionShape2D.shape.extents
+	return $CollisionShape2D.shape.size / 2.0
 
 func get_input():
-	velocity = Vector2()
+	velocity = Vector2.ZERO
 	if Input.is_action_pressed("ui_right"):
 		velocity.x += 1
 	if Input.is_action_pressed("ui_left"):
@@ -31,7 +31,7 @@ func get_input():
 
 func _physics_process(_delta):
 	get_input()
-	velocity = move_and_slide(velocity)
+	move_and_slide()
 
 
 func die(obj, signal_str):
@@ -40,19 +40,19 @@ func die(obj, signal_str):
 		set_physics_process(false)
 		print("player killed")
 		if obj != null:
-			yield(obj, signal_str)
-		emit_signal("player_killed")
+			await obj[signal_str]
+		player_killed.emit()
 
 
 # must be called during idle period
 func disable():
-	visible = false
+	hide()
 	$CollisionShape2D.disabled = true
 
 
 func enable():
 	dead = false
-	visible = true
+	show()
 	set_physics_process(true)
 	$CollisionShape2D.disabled = false
 
@@ -61,14 +61,14 @@ func count_treasures():
 	treasures = 0
 	for level in Global.treasures:
 		treasures += Global.treasures[level].size()
-	Global.emit_signal("update_treasure")
+	Global.update_treasure.emit()
 
 
 func add_treasure():
 	treasures += 1
-	Global.emit_signal("update_treasure")
+	Global.update_treasure.emit()
 	if treasures >= Global.ALL_TREASURES:
-		emit_signal("won")
+		won.emit()
 
 
 func update_camera_limits(rect : Rect2):

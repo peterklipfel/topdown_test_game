@@ -1,12 +1,11 @@
 class_name UIMenu
 extends Control
 
-#warning-ignore:unused_signal
-signal switch_menu(menu_name)
+signal switch_menu(menu_name: StringName)
 
 var selected_id := 0
-export var menu_path : NodePath = "Menu"
-onready var menu = get_node(menu_path)
+@export var menu_path : NodePath = "Menu"
+@onready var menu = get_node(menu_path)
 
 
 func find_first_visible_id():
@@ -55,25 +54,26 @@ func close_ui():
 
 
 func open_menu():
-	visible = true
+	show()
 	grab_focus()
 	change_selected(find_first_visible_id())
 
 
 func close_menu():
-	visible = false
+	hide()
 
 
-func menu_action(action_str):
+func menu_action(action_str: String):
 	print(action_str, " selected")
 
 
 func _gui_input(event):
 	if event.is_action_pressed("ui_up"):
 		change_selected(find_prev_visible_id())
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("ui_down"):
 		change_selected(find_next_visible_id())
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("ui_accept"):
-		menu_action(menu.get_child(selected_id).name)
-	if event.is_action_type():
-		accept_event()
+		menu_action(str(menu.get_child(selected_id).name))
+		get_viewport().set_input_as_handled()

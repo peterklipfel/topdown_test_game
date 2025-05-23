@@ -1,23 +1,23 @@
+class_name GameEnd
 extends Control
 
 var press_any_key := false
 
-#warning-ignore:unused_signal
-signal switch_menu(menu_name)
-signal restart_game
+signal switch_menu(menu_name: StringName)
+signal restart_game()
 
 # Bad names, but they are necessary to work with UI.gd
 func open_menu():
-	$PressAnyKey.visible = false
-	visible = true
+	$PressAnyKey.hide()
+	show()
 	grab_focus()
-	yield(get_tree().create_timer(.5), "timeout")
+	await get_tree().create_timer(0.5).timeout
 	press_any_key = true
-	$PressAnyKey.visible = true
+	$PressAnyKey.show()
 
 
 func close_menu():
-	visible = false
+	hide()
 
 
 func open_ui():
@@ -31,8 +31,8 @@ func close_ui():
 
 
 func _gui_input(event):
-	if event.is_action_type():
+	if (event is InputEventKey and event.pressed and not event.is_echo()) or (event is InputEventMouseButton and event.pressed):
 		if press_any_key:
 			close_ui()
-			emit_signal("restart_game")
-		accept_event()
+			restart_game.emit()
+		get_viewport().set_input_as_handled()

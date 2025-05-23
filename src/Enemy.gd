@@ -3,13 +3,13 @@ class_name Enemy
 extends "res://src/Entity.gd"
 
 func _ready():
-	if Global.has_enemy(name):
+	if Global.has_enemy(str(name)):
 		queue_free()
 
-func player_entered(_body):
-	Global.add_enemy(name)
+func player_entered(body: Node2D):
+	Global.add_enemy(str(name))
 	$EnemySound.play()
-	visible = false
+	hide()
 	set_deferred("monitoring", false)
-	yield($EnemySound, "finished")
+	await $EnemySound.finished
 	queue_free()

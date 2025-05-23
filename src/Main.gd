@@ -1,9 +1,10 @@
+class_name Main
 extends Node
 
 func save_game():
 	print("saving game to ", OS.get_user_data_dir())
-	var save_file = File.new()
-	if save_file.open(Global.SAVE_FILE, File.WRITE) != 0:
+	var save_file = FileAccess.open(Global.SAVE_FILE, FileAccess.WRITE)
+	if not save_file:
 		print("can't open save file at ", Global.SAVE_FILE)
 	else:
 		save_file.store_var(Global.level)
@@ -13,11 +14,11 @@ func save_game():
 
 func load_game():
 	print("loading game from ", OS.get_user_data_dir())
-	var save_file = File.new()
-	if not save_file.file_exists(Global.SAVE_FILE):
+	if not FileAccess.file_exists(Global.SAVE_FILE):
 		print("can't find save file at", Global.SAVE_FILE)
 		return
-	if save_file.open(Global.SAVE_FILE, File.READ) != 0:
+	var save_file = FileAccess.open(Global.SAVE_FILE, FileAccess.READ)
+	if not save_file:
 		print("can't open save file at ", Global.SAVE_FILE)
 	else:
 		Global.level = save_file.get_var()
@@ -28,8 +29,7 @@ func load_game():
 
 
 func remove_save():
-	var dir := Directory.new()
-	if dir.file_exists(Global.SAVE_FILE) and dir.remove(Global.SAVE_FILE) != 0:
+	if DirAccess.file_exists(Global.SAVE_FILE) and DirAccess.remove_absolute(Global.SAVE_FILE) != OK:
 		print("can't remove save file at ", Global.SAVE_FILE)
 
 
@@ -41,7 +41,7 @@ func _load_level(level_str: String, gate_str: String, offset_pct: float):
 	Global.player.count_treasures()
 	var level_resource := load(level_str)
 	# TODO: check for null level_resource, and load default secene
-	var level = level_resource.instance()
+	var level = level_resource.instantiate()
 	$Level.add_child(level)
 	var gate = level.get_node(gate_str)
 	# TODO: check that we actually got a Gate, or find default gate
@@ -56,8 +56,8 @@ func _load_level(level_str: String, gate_str: String, offset_pct: float):
 	# Not sure why I need to wait two frames if not called during a physics
 	# frame. Insted of this, I could remove and player from the scene tree and
 	# re-add them. I'm pretty certain that this will work.
-	yield(get_tree(), "physics_frame")
-	yield(get_tree(), "physics_frame")
+	await get_tree().physics_frame
+	await get_tree().physics_frame
 	$UI.disabled = false
 	Global.player.enable()
 
@@ -66,7 +66,7 @@ func connect_gates(level: Node):
 	for idx in level.get_child_count():
 		var node = level.get_child(idx)
 		if node is Gate:
-			node.connect("exitted_scene", self, "_on_exitted_scene")
+			node.exitted_scene.connect(_on_exitted_scene)
 
 
 # must be called in idle state
@@ -88,7 +88,7 @@ func _switch_level(level_str: String, gate_str: String, offset_pct: float, save:
 	$Level.remove_child(old_level)
 	old_level.free()
 	Global.merge_treasures()
-	$Fadeout/ColorRect.color = Color(0, 0, 0, 0)
+	$Fadeout/ColorRect.color = Color(0.0, 0.0, 0.0, 0.0)
 	_load_level(level_str, gate_str, offset_pct)
 	if (save):
 		save_game()
@@ -99,7 +99,7 @@ func reload_level():
 	Global.enemies = {}
 	Global.curr_treasures = {}
 	$Fadeout/AnimationPlayer.play("fadeout")
-	yield($Fadeout/AnimationPlayer, "animation_finished")
+	await $Fadeout/AnimationPlayer.animation_finished
 	call_deferred("_switch_level", Global.level, Global.gate, 0, false)
 
 
