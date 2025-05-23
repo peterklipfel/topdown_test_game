@@ -1,25 +1,25 @@
+class_name StartMenu
 extends UIMenu
 
-signal start_game
-signal continue_game
+signal start_game()
+signal continue_game()
 
-func menu_action(action_str):
+func menu_action(action_str: String):
 	match action_str:
 		"Start":
 			close_ui()
-			emit_signal("start_game")
+			start_game.emit()
 		"Continue":
 			close_ui()
-			emit_signal("continue_game")
+			continue_game.emit()
 		"Quit":
 			get_tree().quit()
 
 func open_menu():
-	var save_file = File.new()
-	if not save_file.file_exists(Global.SAVE_FILE):
-		$Menu/Continue.visible = false
+	if not FileAccess.file_exists(Global.SAVE_FILE):
+		$Menu/Continue.hide()
 		$Menu/Start.text = "Start"
 	else:
-		$Menu/Continue.visible = true
+		$Menu/Continue.show()
 		$Menu/Start.text = "Restart"
-	.open_menu()
+	super.open_menu()
